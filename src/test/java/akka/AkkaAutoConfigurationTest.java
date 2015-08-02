@@ -2,9 +2,12 @@ package akka;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 @SpringApplicationConfiguration(classes = akka.AkkaAutoConfigurationTest.Main.class)
 public class AkkaAutoConfigurationTest extends TestCase {
 
-
     @SpringBootApplication
     public static class Main {
 
@@ -32,6 +34,8 @@ public class AkkaAutoConfigurationTest extends TestCase {
             return actorSystem.actorOf(extension.springPropertiesForActor("counterActor"));
         }
     }
+
+    private Log log = LogFactory.getLog(getClass());
 
     @Autowired
     private ActorSystem actorSystem;
@@ -49,9 +53,9 @@ public class AkkaAutoConfigurationTest extends TestCase {
         FiniteDuration duration = FiniteDuration.create(3, TimeUnit.SECONDS);
         Future<Object> result = Patterns.ask(this.client, new CounterActor.Get(), Timeout.durationToTimeout(duration));
         try {
-            System.out.println("Got back " + Await.result(result, duration));
+            this.log.info("got back " + Await.result(result, duration));
         } catch (Exception e) {
-            System.err.println("Failed getting result: " + e.getMessage());
+            this.log.info("couldn't retrieve result: " + e.getMessage());
             throw e;
         } finally {
             this.actorSystem.shutdown();
@@ -59,3 +63,30 @@ public class AkkaAutoConfigurationTest extends TestCase {
         }
     }
 }
+
+@Actor
+class CounterActor
+        extends UntypedActor {
+
+    private Log log = LogFactory.getLog(getClass());
+
+    public static class Count {
+    }
+
+    public static class Get {
+    }
+
+    @Override
+    public void onReceive(Object message) throws Exception {
+        if (message instanceof Count) {
+            log.info("count!");
+        } else if (message instanceof Get) {
+            getSender().tell(1, getSelf());
+            log.info("get!");
+        } else {
+            unhandled(message);
+        }
+    }
+}
+
+
