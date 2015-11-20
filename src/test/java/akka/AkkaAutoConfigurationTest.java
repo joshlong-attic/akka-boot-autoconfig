@@ -26,20 +26,9 @@ import java.util.concurrent.TimeUnit;
 @SpringApplicationConfiguration(classes = akka.AkkaAutoConfigurationTest.Main.class)
 public class AkkaAutoConfigurationTest extends TestCase {
 
-    @SpringBootApplication
-    public static class Main {
-
-        @Bean
-        ActorRef client(ActorSystem actorSystem, SpringExtension extension) {
-            return actorSystem.actorOf(extension.springPropertiesForActor("counterActor"));
-        }
-    }
-
     private Log log = LogFactory.getLog(getClass());
-
     @Autowired
     private ActorSystem actorSystem;
-
     @Autowired
     @Qualifier("client")
     private ActorRef client;
@@ -62,19 +51,21 @@ public class AkkaAutoConfigurationTest extends TestCase {
             this.actorSystem.awaitTermination();
         }
     }
+
+    @SpringBootApplication
+    public static class Main {
+
+        @Bean
+        ActorRef client(ActorSystem actorSystem, SpringExtension extension) {
+            return actorSystem.actorOf(extension.springPropertiesForActor("counterActor"));
+        }
+    }
 }
 
 @Actor
-class CounterActor
-        extends UntypedActor {
+class CounterActor extends UntypedActor {
 
     private Log log = LogFactory.getLog(getClass());
-
-    public static class Count {
-    }
-
-    public static class Get {
-    }
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -87,6 +78,10 @@ class CounterActor
             unhandled(message);
         }
     }
+
+    public static class Count {
+    }
+
+    public static class Get {
+    }
 }
-
-

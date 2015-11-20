@@ -15,6 +15,12 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
+/**
+ * TODO routers
+ * TODO cluster
+ * TODO mailboxes
+ */
 @Configuration
 @EnableConfigurationProperties(AkkaProperties.class)
 public class AkkaAutoConfiguration {
@@ -30,7 +36,6 @@ public class AkkaAutoConfiguration {
         return actorSystem;
     }
 
-
     @Bean
     @ConditionalOnMissingBean
     Config akkaConfiguration() {
@@ -42,6 +47,7 @@ public class AkkaAutoConfiguration {
         return new SpringExtension();
     }
 }
+
 
 class SpringExtension implements Extension, ApplicationContextAware {
 
